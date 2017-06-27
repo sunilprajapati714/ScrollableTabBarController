@@ -17,13 +17,11 @@ class ScrollableTabBarController: UITabBarController{
     
     @IBInspectable var onTop : Bool = false
     @IBInspectable var noOfTabs : UInt = 1
-//    @IBInspectable var tabNames: String? = "Tab Item 1"
     @IBInspectable var tabSize : CGSize = CGSize(width: UIScreen.main.bounds.width, height: 30)
     @IBInspectable var tabColor: UIColor? = UIColor.lightGray
     @IBInspectable var selectionColor: UIColor? = UIColor.cyan
-    open var tabNames: String? = "Tab Item 1"
-    open var tabImages: String? = "Tab Item Images"
-    open var arrTabBarModel = [TabBarModel]()
+    @IBInspectable var borderColor: UIColor? = UIColor.orange
+    open var tabBars = [CustomTabBar]()
     
     override var selectedIndex: Int{
         get{
@@ -55,21 +53,37 @@ class ScrollableTabBarController: UITabBarController{
         guard selectedIndex != sender.tag else {
             return
         }        
-        self.unSelectAllTabs()
-        sender.backgroundColor = selectionColor //Select Tab's Set BGColor
+        self.unSelectAllTabs(index: sender.tag)
         self.selectedIndex = sender.tag
     }
     
     //MARK:- User Define Methods
-    func unSelectAllTabs(){
-        for btn in IBtabScrollView.subviews{btn.backgroundColor = tabColor}
+    func unSelectAllTabs(index : Int){
+
+        for view in IBtabScrollView.subviews{
+            
+            view.clipsToBounds == true ? (view.backgroundColor = selectionColor) : (view.backgroundColor = tabColor)
+            if view.tag == index{
+                view.clipsToBounds == true ? (view.backgroundColor = tabColor) : (view.backgroundColor = selectionColor)
+            }
+            
+            //Change State Of Button ofr select and unselect
+            if let btn = view as? UIButton{
+                btn.tag == index ? (btn.isSelected = true) : (btn.isSelected = false)
+            }
+        }
     }
     
     func configureCustomViewWithSettings(){
         
         self.tabBar.isHidden = true
+        
         //Load Custom Tab UIView 
         Bundle.main.loadNibNamed("CustomTabUIView", owner: self, options: nil)
+        guard noOfTabs > 0 else{
+            self.IBtapView.isHidden = true
+            return
+        }
         
         //Set Postion Of TabBar Controller
         if onTop == true{
@@ -85,31 +99,69 @@ class ScrollableTabBarController: UITabBarController{
             tabSize = CGSize(width: (self.view.frame.width / CGFloat(noOfTabs) - (2 + (2/CGFloat(noOfTabs)))), height: tabSize.height)
         }
         
-        let arrTabNames = tabNames?.components(separatedBy: ",")
-        let arrTabImages = tabImages?.components(separatedBy: ",")
-        
-        //Add No Of Tabs into ScrollView
+        //Add No Of Tabs into ScrollView with Images and Badge Numbers
         for index in 0..<Int(noOfTabs){
             
             let tabPoint = CGPoint(x: (CGFloat(index) * tabSize.width)+(CGFloat(index+1) * 2), y: 2)
             
             var tabBtn = UIButton()
+            var lblBadge : UILabel?
+            tabBtn = UIButton(frame: CGRect(origin: tabPoint, size: CGSize(width: tabSize.width, height: tabSize.height-4)))
             
-            if arrTabBarModel.count > index{
+            if tabBars.count > index{
                 
-                tabBtn = UIButton(frame: CGRect(origin: tabPoint, size: CGSize(width: tabSize.width, height: ((tabSize.height-5) * 4)/5)))
-                tabBtn.setImage(UIImage(named: arrTabBarModel[index].tabImage), for: .normal)
-                tabBtn.imageView?.contentMode = .scaleToFill
+                if let tabName = tabBars[index].name, let tabImage = tabBars[index].selectImage, let tabDeImage = tabBars[index].deSelectImage{
+                    
+                    //Add Button
+                    tabBtn = UIButton(frame: CGRect(origin: tabPoint, size: CGSize(width: tabSize.width, height: tabSize.height-19)))
+                    tabBtn.setBackgroundImage(UIImage(named: tabDeImage), for: .normal)
+                    tabBtn.setBackgroundImage(UIImage(named: tabImage), for: .selected)
+                    tabBtn.imageView?.contentMode = .scaleToFill
+                    
+                    //Add Label
+                    let tabLbl = UILabel(frame: CGRect(x: tabPoint.x, y: tabBtn.frame.height+2, width: tabSize.width, height: 15))
+                    tabLbl.backgroundColor = index == 0 ? selectionColor : tabColor
+                    tabLbl.textColor = UIColor.white
+                    tabLbl.textAlignment = .center
+                    tabLbl.font = UIFont(name: "Helvetica Neue", size: 12.0)
+                    tabLbl.text = tabName
+                    tabLbl.tag = index
+                    self.IBtabScrollView.addSubview(tabLbl)
+                    
+                }else if let tabName = tabBars[index].name{
+                    tabBtn.setTitle(tabName, for: .normal)
+                    
+                }else if let tabImage = tabBars[index].selectImage, let tabDeImage = tabBars[index].deSelectImage{
+                    tabBtn.setBackgroundImage(UIImage(named: tabDeImage), for: .normal)
+                    tabBtn.setBackgroundImage(UIImage(named: tabImage), for: .selected)
+                    tabBtn.imageView?.contentMode = .scaleToFill
+                    
+                }else{
+                    tabBtn.setTitle("Tab Item \(index+1)", for: .normal)
+                }
                 
-                let tabLbl = UILabel(frame: CGRect(x: tabPoint.x, y: tabBtn.frame.height+2, width: tabSize.width, height: (tabSize.height-5)/5))
-                tabLbl.backgroundColor = UIColor.clear
-                tabLbl.textColor = UIColor.white
-                tabLbl.text = arrTabBarModel[index].tabName
-                self.IBtabScrollView.addSubview(tabLbl)
+                if let badgeNumber = tabBars[index].badgeNumber{
+                    
+                    var size : CGFloat = 12
+                    var bNumber = String(badgeNumber)
+                    if badgeNumber > 99{
+                        bNumber = "99+"
+                        size = 8.5
+                    }
+                    
+                    let x = ((CGFloat(index+1) * tabSize.width) + CGFloat(index * 2)-13)
+                    lblBadge = UILabel(frame: CGRect(x: Int(x), y: 2, width: 15, height: 15))
+                    lblBadge?.backgroundColor = index == 0 ? tabColor : selectionColor
+                    lblBadge?.textColor = UIColor.white
+                    lblBadge?.textAlignment = .center
+                    lblBadge?.font = UIFont(name: "Helvetica Neue", size: size)
+                    lblBadge?.text = bNumber
+                    lblBadge?.tag = index
+                    lblBadge?.layer.cornerRadius = 7.5
+                    lblBadge?.clipsToBounds = true
+                }
                 
             }else{
-                
-                tabBtn = UIButton(frame: CGRect(origin: tabPoint, size: CGSize(width: tabSize.width, height: tabSize.height-4)))
                 tabBtn.setTitle("Tab Item \(index+1)", for: .normal)
             }
             
@@ -118,24 +170,21 @@ class ScrollableTabBarController: UITabBarController{
             tabBtn.titleLabel?.font = UIFont(name: "Helvetica Neue", size: 15.0)
             tabBtn.titleLabel?.adjustsFontSizeToFitWidth = true
             tabBtn.backgroundColor = index == 0 ? selectionColor : tabColor
+            tabBtn.isSelected = (index == 0) ? true : false
             self.IBtabScrollView.addSubview(tabBtn)
+            if let lblBadge = lblBadge{self.IBtabScrollView.addSubview(lblBadge)}
         }
         
         //Set Content Size of ScrollView
         IBtabScrollView.contentSize = CGSize(width: (tabSize.width * CGFloat(noOfTabs))+(2 * CGFloat(noOfTabs+1)), height: tabSize.height)
-        self.IBtabScrollView.backgroundColor = selectionColor
+        self.IBtabScrollView.backgroundColor = borderColor
     }
     
-    func addImagesAndTitleOnTabs(){
-        
-    }
-    
-    func addImagesOnlyOnTabs(){
-        
-    }
-    
-    func addTitleOnlyOnTabs(){
-        
+    func reloadTabBar(){
+        for subView in self.IBtapView.subviews{
+            subView.removeFromSuperview()
+        }
+        self.configureCustomViewWithSettings()
     }
     
     //Add Custom Animation When Nagviagte ONe View Controller To Another View Controller

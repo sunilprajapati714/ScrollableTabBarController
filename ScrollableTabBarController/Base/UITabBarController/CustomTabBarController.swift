@@ -9,22 +9,32 @@
 import UIKit
 
 class CustomTabBarController: ScrollableTabBarController {
-
-    let tName = "VC1,VC2,VC3,VC4,VC5"
-    let tImages = "VC1,VC2,VC3,VC4,VC5"
     
+    //MARK:- IBOutlet Declaration
+    var tab1 : CustomTabBar?
+    
+    //MARK:- View Controller Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.tabNames = tName
-        self.tabImages = tImages
+        //Add TabBarModel tab with Name and Image property
+        tab1 = CustomTabBar(name: "Tab 1", selectImage: "setting_select", deSelectImage: "setting_unselect")
+        let tab2 = CustomTabBar(name: "Tab 2", selectImage: "star_select", deSelectImage: "star_unselect")
+        let tab3 = CustomTabBar(name: nil, selectImage: "heart_select", deSelectImage: "heart_unselect", badgeNumber: 3)
+        let tab4 = CustomTabBar(name: nil, selectImage: "user_select", deSelectImage: "user_unselect")
+        let tab5 = CustomTabBar(name: "Tab 5", selectImage: nil, deSelectImage: nil, badgeNumber: 5)
+        let tab6 = CustomTabBar(name: "Tab 6", selectImage: nil, deSelectImage: nil)
         
-        let tab1 = TabBarModel(tabName: "VC1", tabImage: "VC1")
-        let tab2 = TabBarModel(tabName: "VC2", tabImage: "VC2")
-        let tab3 = TabBarModel(tabName: "VC3", tabImage: "VC3")
-        let tab4 = TabBarModel(tabName: "VC4", tabImage: "VC4")
-        let tab5 = TabBarModel(tabName: "VC5", tabImage: "VC5")
-        self.arrTabBarModel = [tab1,tab2,tab3,tab4,tab5]
+        self.tabBars = [tab1!,tab2,tab3,tab4,tab5,tab6]
+    }
+    
+    func btnclick(){
+        tab1?.badgeNumber = 1
+        self.reloadTabBar()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+//        btnclick()
     }
 
     override func didReceiveMemoryWarning() {

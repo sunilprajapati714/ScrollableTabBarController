@@ -10,13 +10,15 @@ import Foundation
 
 class CustomTabBar : NSObject{
     
-    let name : String?
-    let selectImage : String?
-    let deSelectImage : String?
+    var name : String?
+    var selectImage : String?
+    var deSelectImage : String?
+    var badgeNumber : Int?
     
-    init(name: String?, selectImage: String?, deSelectImage: String?) {
+    init(name: String?, selectImage: String?, deSelectImage: String?, badgeNumber : Int? = nil) {
         self.name = name
         self.selectImage = selectImage
         self.deSelectImage = deSelectImage
+        self.badgeNumber = badgeNumber
     }
 }

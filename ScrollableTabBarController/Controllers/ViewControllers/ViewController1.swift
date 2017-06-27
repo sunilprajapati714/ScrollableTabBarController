@@ -9,11 +9,22 @@
 import UIKit
 
 class ViewController1: UIViewController {
-
+    
+    //MARK:- IBOutlet Declaration
+    var msg : String?
+    
+    //MARK:- View Controller Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        self.navigationController?.isNavigationBarHidden = true
+        
+        //Set TabBar's BadgeNumber
+        if let tabBarController = self.tabBarController as? CustomTabBarController{
+            tabBarController.tab1?.badgeNumber = 100
+            tabBarController.reloadTabBar()
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -21,15 +32,23 @@ class ViewController1: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    //MARK:- IBAction Methods
+    @IBAction func btnAnotherViewController(_ sender: Any) {
+        if let anotherVC = self.storyboard?.instantiateViewController(withIdentifier: "AnotherViewController") as? AnotherViewController {
+            self.navigationController?.pushViewController(anotherVC, animated: true)
+        }
     }
-    */
-
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showAnother"{
+            print("OK")
+        }
+    }
+    
+    @IBAction func backToVC1(sender : UIStoryboardSegue){
+        print("View Controller 1")
+        if let msg = msg{
+            print(msg)
+        }
+    }
 }
